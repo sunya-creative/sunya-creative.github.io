@@ -1728,6 +1728,7 @@ function openProjectDrawer(key) {
 
                 // Bottom row in right column containing two side-by-side images
                 const bottomRow = document.createElement("div");
+                bottomRow.className = "subgrid-bottom-row";
                 bottomRow.style.display = "flex";
                 bottomRow.style.gap = "16px";
                 bottomRow.style.width = "100%";

@@ -1,0 +1,8 @@
+.ssh_temp/
+.DS_Store
+*.pem
+*.key
+.env
+.env.local
+node_modules/
+dist/

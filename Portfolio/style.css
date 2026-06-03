@@ -46,19 +46,28 @@ html {
     transition: var(--transition-theme);
 }
 
+/* Fixed background for viewport scaling & resolution optimization */
+.fixed-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: -9999;
+    background-image: url('asset/bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+}
+
 body {
     overflow-x: hidden;
     cursor: none; /* Hide default cursor */
     background-color: var(--bg-color);
     color: var(--text-color);
     transition: var(--transition-theme);
-    
-    /* bg.png background config */
-    background-image: url('asset/bg.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
 }
 
 a, button {
@@ -1381,7 +1390,7 @@ a, button {
 @media (max-width: 1024px) {
     .drawer__scroll-container {
         grid-template-columns: 1fr;
-        grid-template-rows: 290px 1fr; /* 290px is calculated to show exactly up to the first line of ROLE */
+        grid-template-rows: 174px 1fr; /* 174px is exactly 60% of the previous 290px */
         overflow: hidden;
     }
     .drawer__info-panel {
@@ -1389,12 +1398,42 @@ a, button {
         overflow-y: auto;
         border-right: none;
         border-bottom: 1px solid var(--border-color);
-        padding: 24px 24px 32px 24px;
-        gap: 20px;
+        padding: 16px 20px 20px 20px;
+        gap: 12px;
     }
     .drawer__project-cat, 
     .drawer__project-title {
         padding-right: 60px;
+    }
+    .drawer__project-title {
+        font-size: 1.15rem;
+        margin-bottom: 8px;
+    }
+    .drawer__project-cat {
+        font-size: 0.65rem;
+        margin-bottom: 4px;
+    }
+    .drawer__meta {
+        gap: 6px;
+        padding: 8px 0;
+    }
+    .meta-item {
+        font-size: 0.75rem;
+    }
+    .detail-section:not(:first-child) {
+        margin-top: 18px;
+    }
+    .detail-section h3 {
+        font-size: 0.65rem;
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+    }
+    .detail-section p {
+        font-size: 0.8rem;
+    }
+    .bullet-list li {
+        font-size: 0.8rem;
+        margin-bottom: 4px;
     }
     .drawer__gallery-panel {
         height: 100%;
@@ -1418,10 +1457,10 @@ a, button {
 
 @media (max-width: 768px) {
     .drawer__scroll-container {
-        grid-template-rows: 290px 1fr;
+        grid-template-rows: 174px 1fr; /* Reduced height to 60% */
     }
     .drawer__info-panel {
-        padding: 20px 20px 24px 20px;
+        padding: 12px 16px 16px 16px;
     }
     .drawer__gallery-panel {
         height: 100%;

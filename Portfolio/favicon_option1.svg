@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800&amp;display=swap');
+      .s-text {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-weight: 800;
+      }
+    </style>
+  </defs>
+  <!-- Circular background in #d8d0ce -->
+  <circle cx="16" cy="16" r="16" fill="#d8d0ce" />
+  
+  <!-- Centered white uppercase S using Plus Jakarta Sans (Enlarged to size 21) -->
+  <text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" class="s-text" font-size="21" fill="#FFFFFF" letter-spacing="-0.02em">S</text>
+</svg>

@@ -84,6 +84,10 @@
     animation: highlightFlash 2s ease-out;
     border-radius: 4px;
   }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   .search-matched summary {
     background-color: #fef7e6;
   }
@@ -126,10 +130,19 @@
 
   <!-- 일자별 일정 (최상단 배치) -->
   <div>
-    <div style="padding-bottom:8px;border-bottom:1.5px solid var(--ink);margin-bottom:6px">
-      <h2 style="font-size:15px;font-weight:700;margin:0 0 4px;line-height:1.2">일자별 일정</h2>
+    <div id="route-header-container" style="padding-bottom:8px;border-bottom:1.5px solid var(--ink);margin-bottom:6px;cursor:pointer;user-select:none;transition:background-color 0.2s;" onmouseover="this.style.backgroundColor='#faf8f5'" onmouseout="this.style.backgroundColor='transparent'">
+      <h2 style="font-size:15px;font-weight:700;margin:0 0 4px;line-height:1.2;display:flex;align-items:center;justify-content:space-between;">
+        일자별 일정
+        <span style="font-size:11px;font-weight:normal;color:#1C4E6B;border:1px solid #cddbe4;padding:1px 6px;border-radius:3px;background:#f0f7fa;">🗺️ 경로 지도 보기</span>
+      </h2>
       <div class="route" style="margin:0"><b>카이로 · 아스완 · 아부심벨 · 에드푸 · 룩소르 · 덴데라 · 카이로</b> — 1차 9박 12일</div>
     </div>
+    
+    <!-- 이집트 이동 경로 지도 이미지 (초기 숨김) -->
+    <div id="route-map-container" style="display:none;margin-bottom:14px;text-align:center;animation: fadeIn 0.3s ease;">
+      <img src="./egypt-route.png" alt="이집트 이동 경로 지도" style="width:100%;max-width:780px;height:auto;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.12);border:1px solid var(--line);">
+    </div>
+
     <table class="itin">
       <thead><tr><th>일자</th><th>일정</th><th>왕조 · 시대</th></tr></thead>
       <tbody>
@@ -141,7 +154,7 @@
         <tr><td class="day">6일차 (1/7, 목)</td><td><a href="#site-edfu" class="itin-link" onclick="jumpSite(event,'site-edfu')">에드푸 호루스 신전</a> · 룩소르 이동 · <a href="#site-karnak" class="itin-link" onclick="jumpSite(event,'site-karnak')">카르나크 신전</a> · <a href="#site-luxor-mus" class="itin-link" onclick="jumpSite(event,'site-luxor-mus')">룩소르 박물관</a></td><td class="era-cell" style="--c:#1C4E6B">신왕국 · 프톨레마이오스</td></tr>
         <tr><td class="day">7일차 (1/8, 금)</td><td><a href="#site-memnon" class="itin-link" onclick="jumpSite(event,'site-memnon')">멤논의 거상</a> · <a href="#site-habu" class="itin-link" onclick="jumpSite(event,'site-habu')">메디넷 하부</a> · <a href="#site-deir-medina" class="itin-link" onclick="jumpSite(event,'site-deir-medina')">데이르 엘 메디나</a> · <a href="#site-hatshepsut" class="itin-link" onclick="jumpSite(event,'site-hatshepsut')">하트셉수트 장제전</a> · <a href="#site-nobles-tombs" class="itin-link" onclick="jumpSite(event,'site-nobles-tombs')">귀족 무덤군 7곳</a> · <a href="#site-luxor-temple" class="itin-link" onclick="jumpSite(event,'site-luxor-temple')">룩소르 신전</a></td><td class="era-cell" style="--c:#1C4E6B">신왕국</td></tr>
         <tr><td class="day">8일차 (1/9, 토)</td><td><a href="#site-dendera" class="itin-link" onclick="jumpSite(event,'site-dendera')">덴데라 하토르 신전</a> · 왕들의 계곡(<a href="#site-seti-kv17" class="itin-link" onclick="jumpSite(event,'site-seti-kv17')">세티 1세</a> · <a href="#site-tut-kv62" class="itin-link" onclick="jumpSite(event,'site-tut-kv62')">투탕카멘</a>)</td><td class="era-cell" style="--c:#1C4E6B">신왕국 · 프톨레마이오스</td></tr>
-        <tr><td class="day">9일차 (1/10, 일)</td><td>룩소르→카이로 항공 · <a href="#site-gem-gold" class="itin-link" onclick="jumpSite(event,'site-gem-gold')">대이집트박물관(GEM)</a></td><td class="era-cell" style="--c:#666">박물관 (신왕국 중심)</td></tr>
+        <tr><td class="day">9일차 (1/10, 일)</td><td>룩소르→카이로 항공 · <a href="#site-gem-gold" class="itin-link" onclick="jumpSite(event,'site-gem-gold')">대이집트박물관(GEM)</a></td><td class="era-cell" style="--c:#666">박물관</td></tr>
         <tr><td class="day">10일차 (1/11, 월)</td><td><a href="#site-giza" class="itin-link" onclick="jumpSite(event,'site-giza')">기자 3대 피라미드 입장</a> · <a href="#site-sphinx" class="itin-link" onclick="jumpSite(event,'site-sphinx')">스핑크스</a> · <a href="#site-nmec" class="itin-link" onclick="jumpSite(event,'site-nmec')">이집트 문명 박물관</a> · <a href="#site-khalili" class="itin-link" onclick="jumpSite(event,'site-khalili')">칸 엘 칼릴리</a></td><td class="era-cell" style="--c:#A87A28">고왕국 · 이슬람</td></tr>
         <tr><td class="day">11일차 (1/12, 화)</td><td><a href="#site-tahrir" class="itin-link" onclick="jumpSite(event,'site-tahrir')">이집트 박물관</a> · <a href="#site-citadel" class="itin-link" onclick="jumpSite(event,'site-citadel')">살라딘 성채</a> · 카이로 출발 <span class="fl">QR1302 19:55</span></td><td class="era-cell" style="--c:#666">박물관 · 이슬람</td></tr>
         <tr><td class="day">12일차 (1/13, 수)</td><td>도하 환승 · 인천공항 17:15 도착</td><td class="era-cell" style="--c:#999">이동</td></tr>
@@ -485,6 +498,30 @@ async function fetchImgs(title){
     }); }catch(e){}
   return [...new Set(urls)].slice(0,3);
 }
+
+// 이동 경로 지도 토글 및 외부 클릭 시 숨김 기능
+document.addEventListener('DOMContentLoaded', function() {
+  var routeHeader = document.getElementById('route-header-container');
+  var routeMap = document.getElementById('route-map-container');
+  if (!routeHeader || !routeMap) return;
+
+  routeHeader.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (routeMap.style.display === 'none') {
+      routeMap.style.display = 'block';
+    } else {
+      routeMap.style.display = 'none';
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (routeMap.style.display === 'block') {
+      if (!routeMap.contains(e.target) && !routeHeader.contains(e.target)) {
+        routeMap.style.display = 'none';
+      }
+    }
+  });
+});
 </script>
 </body>
 </html>

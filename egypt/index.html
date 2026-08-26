@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>연표순 방문지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#1b1b1b; --soft:#8f8f8f; --line:#e7e7e7; --day:#9a9a9a; --pt:#585858; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:'Noto Sans KR',sans-serif;background:#fff;color:var(--ink);
+    line-height:1.3;padding:20px 14px 50px;display:flex;justify-content:center;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sheet{width:100%;max-width:780px;background:#fff}
+
+  /* 상단 컨트롤 바 (검색창 + 이집트 신 버튼) */
+  .top-bar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:nowrap}
+  .search-wrap{flex:1;min-width:0}
+  .search-wrap input{width:100%;padding:6px 10px;font-size:11.5px;border:1px solid #e0e0e0;background:transparent;border-radius:4px;font-family:inherit;outline:none;color:#333;transition:all .15s}
+  .search-wrap input:focus{background:#fff;border-color:#a0a0a0}
+  .img-btn{display:inline-flex;align-items:center;justify-content:center;padding:6px 12px;font-size:11.5px;font-weight:500;color:#333;background:#f7f7f7;border:1px solid #e0e0e0;border-radius:4px;text-decoration:none;white-space:nowrap;cursor:pointer;transition:all .15s;flex-shrink:0}
+  .img-btn:hover{background:#ebebeb;color:#111}
+
+  .route{font-size:11px;color:var(--soft);margin-top:10px}
+  .route b{color:var(--ink);font-weight:500}
+
+  .ih{font-size:15px;font-weight:700;margin:0 0 3px;padding-bottom:8px;border-bottom:1.5px solid var(--ink)}
+  .itin{width:100%;border-collapse:collapse;font-size:11px;margin-top:2px}
+  .itin th{text-align:left;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--soft);font-weight:700;padding:6px 8px 9px;border-bottom:1.5px solid var(--ink)}
+  .itin td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.3}
+  .itin .era-cell{font-weight:700;color:var(--c);white-space:nowrap;border-left:3px solid var(--c);width:132px;padding-left:11px}
+  .itin .day{white-space:nowrap;color:var(--soft);font-weight:500;width:46px}
+  .fl{display:inline-block;font-size:9.5px;color:var(--soft);border:1px solid var(--line);padding:0 5px;border-radius:2px;margin-left:5px}
+
+  /* 일정 표 내 유적 이동 앵커 링크 */
+  .itin-link{color:var(--ink);text-decoration:underline;text-decoration-color:#b0a48e;text-underline-offset:2px;cursor:pointer;transition:all .15s;border-radius:2px;padding:0 1px}
+  .itin-link:hover{color:#1C4E6B;background-color:#f0eada;font-weight:500}
+
+  .era{display:flex;border-top:1px solid var(--line)}
+  .era:first-of-type{border-top:none}
+  .label{flex:0 0 120px;border-left:3px solid var(--c);padding:8px 8px 8px 11px}
+  .ename{font-weight:700;font-size:13px;color:var(--c);line-height:1.2}
+  .edate{font-size:9px;color:var(--soft);margin-top:2px}
+  .etag{font-size:9.5px;color:var(--ink);margin-top:4px;line-height:1.25}
+  .body{flex:1;padding:4px 0 5px 12px;border-left:1px solid var(--line);min-width:0}
+
+  .kgroup{display:flex;gap:10px;align-items:baseline;padding:3px 0}
+  .kgroup + .kgroup{border-top:1px solid #f2f2f2}
+  .king{flex:0 0 112px;font-size:11.5px;font-weight:700;line-height:1.25}
+  .king em{display:block;font-style:normal;font-weight:400;font-size:9.5px;color:var(--soft)}
+  .ksites{flex:1;min-width:0}
+
+  details.site{border-bottom:1px dotted #eee;transition:background-color .3s, outline .3s}
+  details.site:last-child{border-bottom:none}
+  summary{display:grid;grid-template-columns:150px 26px 1fr;gap:8px;align-items:baseline;
+    padding:3px 18px 3px 0;position:relative;cursor:pointer;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"▾";position:absolute;right:2px;top:3px;color:#c3c3c3;font-size:10px;transition:transform .15s}
+  details[open] summary::after{transform:rotate(180deg)}
+  summary:hover{background:#f8f5ef}
+  .nm{font-size:11.5px;font-weight:500;text-decoration:underline;text-decoration-color:#e0d6c1;text-underline-offset:2px}
+  .d{font-size:9.5px;font-weight:700;color:var(--day)}
+  .pt{font-size:10.8px;color:var(--pt)}
+  .detail{padding:2px 18px 10px 0}
+  .desc{font-size:12.5px;line-height:1.65;color:#333;margin:2px 0 10px}
+  .imgs{display:flex;gap:6px;margin-bottom:9px}
+  .imgs .slot{flex:1;aspect-ratio:3/4;background:#f0ece2;border-radius:5px;overflow:hidden}
+  .imgs img{width:100%;height:100%;object-fit:cover;display:block}
+  .lnk{font-size:11px}
+  .lnk a{color:#1C4E6B;text-decoration:none;border-bottom:1px solid #cddbe4}
+  .memo{font-size:10px;color:var(--soft);padding:3px 0;font-style:italic}
+
+  /* 스크롤 이동 하이라이트 효과 */
+  @keyframes highlightFlash {
+    0% { background-color: #fff4cc; outline: 2px solid #e2b024; }
+    70% { background-color: #fff4cc; outline: 2px solid #e2b024; }
+    100% { background-color: transparent; outline: none; }
+  }
+  .highlight-site {
+    animation: highlightFlash 2s ease-out;
+    border-radius: 4px;
+  }
+  .search-matched summary {
+    background-color: #fef7e6;
+  }
+
+  .aside{margin-top:16px;padding-top:11px;border-top:2px solid var(--ink)}
+  .aside-label{font-size:10px;letter-spacing:.1em;color:var(--soft);font-weight:700;margin-bottom:7px}
+  .aside-era{border-top:none}
+  .aside-era .label{border-left-style:dashed}
+
+  @media (max-width:620px){
+    .era{flex-direction:column}
+    .label{flex:none;border-left:3px solid var(--c);padding:6px 0 4px 8px}
+    .body{border-left:3px solid var(--c);padding-left:8px}
+    .kgroup{display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:baseline;padding:3px 0}
+    .king{font-size:11px}
+    .ksites{width:100%}
+    summary{grid-template-columns:1fr auto;gap:1px 8px}
+    summary .pt{grid-column:1 / -1}
+    .itin .era-cell{width:104px;font-size:10.5px}
+    .top-bar{flex-direction:row;align-items:center}
+  }
+  @page{ size:A4; margin:8mm }
+  @media print{
+    body{padding:0} .sheet{max-width:none} .top-bar{display:none}
+    summary::after{display:none} .detail{display:none}
+    .era,.itin tr{page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <!-- 상단 컨트롤 바 (검색창 + 이집트 신 버튼) -->
+  <div class="top-bar">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="검색" aria-label="검색">
+    </div>
+    <a href="./egypt-schedule-images.html" class="img-btn">이집트 신</a>
+  </div>
+
+  <!-- 일자별 일정 (최상단 배치) -->
+  <div>
+    <div style="padding-bottom:8px;border-bottom:1.5px solid var(--ink);margin-bottom:6px">
+      <h2 style="font-size:15px;font-weight:700;margin:0 0 4px;line-height:1.2">일자별 일정</h2>
+      <div class="route" style="margin:0"><b>카이로 · 아스완 · 아부심벨 · 에드푸 · 룩소르 · 덴데라 · 카이로</b> — 1차 9박 12일</div>
+    </div>
+    <table class="itin">
+      <thead><tr><th>일자</th><th>일정</th><th>왕조 · 시대</th></tr></thead>
+      <tbody>
+        <tr><td class="day">1일차</td><td>인천공항 집결 · 출발 <span class="fl">QR859 익일 01:20</span></td><td class="era-cell" style="--c:#999">이동</td></tr>
+        <tr><td class="day">2일차</td><td>카이로 도착 · <a href="#site-djoser" class="itin-link" onclick="jumpSite(event,'site-djoser')">사카라(계단식 피라미드</a> · <a href="#site-serapeum" class="itin-link" onclick="jumpSite(event,'site-serapeum')">세라피움)</a></td><td class="era-cell" style="--c:#A87A28">고왕국</td></tr>
+        <tr><td class="day">3일차</td><td><a href="#site-memphis" class="itin-link" onclick="jumpSite(event,'site-memphis')">멤피스</a> · 사카라(<a href="#site-unas" class="itin-link" onclick="jumpSite(event,'site-unas')">우나스</a> · <a href="#site-teti" class="itin-link" onclick="jumpSite(event,'site-teti')">테티</a> · <a href="#site-kagemni" class="itin-link" onclick="jumpSite(event,'site-kagemni')">카겜니</a>) · 다슈르(<a href="#site-bent" class="itin-link" onclick="jumpSite(event,'site-bent')">굴절</a> · <a href="#site-red" class="itin-link" onclick="jumpSite(event,'site-red')">붉은 피라미드</a>) · 아스완행 항공</td><td class="era-cell" style="--c:#A87A28">고왕국</td></tr>
+        <tr><td class="day">4일차</td><td>아스완 심화 — <a href="#site-qubbet" class="itin-link" onclick="jumpSite(event,'site-qubbet')">쿠베트 엘 하와</a> · <a href="#site-elephantine" class="itin-link" onclick="jumpSite(event,'site-elephantine')">엘레판티네 섬</a> · <a href="#site-sehel" class="itin-link" onclick="jumpSite(event,'site-sehel')">세헬 섬</a> · <a href="#site-obelisk" class="itin-link" onclick="jumpSite(event,'site-obelisk')">미완성 오벨리스크</a> · <a href="#site-nubian-mus" class="itin-link" onclick="jumpSite(event,'site-nubian-mus')">누비안 박물관</a></td><td class="era-cell" style="--c:#5F6E42">고왕국~중왕국</td></tr>
+        <tr><td class="day">5일차</td><td><a href="#site-abusimbel" class="itin-link" onclick="jumpSite(event,'site-abusimbel')">아부심벨(대 · 소신전)</a> · <a href="#site-philae" class="itin-link" onclick="jumpSite(event,'site-philae')">필라에 섬(이시스 신전)</a></td><td class="era-cell" style="--c:#1C4E6B">신왕국 · 프톨레마이오스</td></tr>
+        <tr><td class="day">6일차</td><td><a href="#site-edfu" class="itin-link" onclick="jumpSite(event,'site-edfu')">에드푸 호루스 신전</a> · 룩소르 이동 · <a href="#site-karnak" class="itin-link" onclick="jumpSite(event,'site-karnak')">카르나크 신전</a> · <a href="#site-luxor-mus" class="itin-link" onclick="jumpSite(event,'site-luxor-mus')">룩소르 박물관</a></td><td class="era-cell" style="--c:#1C4E6B">신왕국 · 프톨레마이오스</td></tr>
+        <tr><td class="day">7일차</td><td><a href="#site-memnon" class="itin-link" onclick="jumpSite(event,'site-memnon')">멤논의 거상</a> · <a href="#site-habu" class="itin-link" onclick="jumpSite(event,'site-habu')">메디넷 하부</a> · <a href="#site-deir-medina" class="itin-link" onclick="jumpSite(event,'site-deir-medina')">데이르 엘 메디나</a> · <a href="#site-hatshepsut" class="itin-link" onclick="jumpSite(event,'site-hatshepsut')">하트셉수트 장제전</a> · <a href="#site-nobles-tombs" class="itin-link" onclick="jumpSite(event,'site-nobles-tombs')">귀족 무덤군 7곳</a> · <a href="#site-luxor-temple" class="itin-link" onclick="jumpSite(event,'site-luxor-temple')">룩소르 신전</a></td><td class="era-cell" style="--c:#1C4E6B">신왕국</td></tr>
+        <tr><td class="day">8일차</td><td><a href="#site-dendera" class="itin-link" onclick="jumpSite(event,'site-dendera')">덴데라 하토르 신전</a> · 왕들의 계곡(<a href="#site-seti-kv17" class="itin-link" onclick="jumpSite(event,'site-seti-kv17')">세티 1세</a> · <a href="#site-tut-kv62" class="itin-link" onclick="jumpSite(event,'site-tut-kv62')">투탕카멘</a>)</td><td class="era-cell" style="--c:#1C4E6B">신왕국 · 프톨레마이오스</td></tr>
+        <tr><td class="day">9일차</td><td>룩소르→카이로 항공 · <a href="#site-gem-gold" class="itin-link" onclick="jumpSite(event,'site-gem-gold')">대이집트박물관(GEM)</a></td><td class="era-cell" style="--c:#666">박물관 (신왕국 중심)</td></tr>
+        <tr><td class="day">10일차</td><td><a href="#site-giza" class="itin-link" onclick="jumpSite(event,'site-giza')">기자 3대 피라미드 입장</a> · <a href="#site-sphinx" class="itin-link" onclick="jumpSite(event,'site-sphinx')">스핑크스</a> · <a href="#site-nmec" class="itin-link" onclick="jumpSite(event,'site-nmec')">이집트 문명 박물관</a> · <a href="#site-khalili" class="itin-link" onclick="jumpSite(event,'site-khalili')">칸 엘 칼릴리</a></td><td class="era-cell" style="--c:#A87A28">고왕국 · 이슬람</td></tr>
+        <tr><td class="day">11일차</td><td><a href="#site-tahrir" class="itin-link" onclick="jumpSite(event,'site-tahrir')">이집트 박물관</a> · <a href="#site-citadel" class="itin-link" onclick="jumpSite(event,'site-citadel')">살라딘 성채</a> · 카이로 출발 <span class="fl">QR1302 19:55</span></td><td class="era-cell" style="--c:#666">박물관 · 이슬람</td></tr>
+        <tr><td class="day">12일차</td><td>도하 환승 · 인천공항 17:15 도착</td><td class="era-cell" style="--c:#999">이동</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 한 줄 띄고 연표순 방문지 제목 배치 -->
+  <h2 style="font-size:15px;font-weight:700;margin:24px 0 12px;line-height:1.2">연표순 방문지</h2>
+
+  <!-- 연표순 방문지 상세 -->
+  <div class="era" style="--c:#8A7B5C">
+    <div class="label"><div class="ename">초기왕조</div><div class="edate">c.3100–2686 BCE</div><div class="etag">통일 왕조의 시작</div></div>
+    <div class="body">
+      <div class="kgroup"><div class="king">나르메르</div><div class="ksites"><details class="site" id="site-narmer" data-wiki="Narmer Palette">
+      <summary><span class="nm">상·하 이집트 통일</span><span class="d"></span><span class="pt">박물관의 나르메르 팔레트로 만남</span></summary>
+      <div class="detail"><p class="desc">이집트 역사의 문을 여는 유물로, 상·하 이집트를 처음 통일한 나르메르 왕을 새긴 화장판(팔레트)이다. 한 면엔 상이집트의 흰 왕관을, 다른 면엔 하이집트의 붉은 왕관을 쓴 왕이 등장해 통일을 상징한다. 왕이 적을 내리치는 자세는 이후 3천 년간 이어질 파라오 도상의 원형이 된다. 실물은 카이로 박물관·GEM에 있어, 유적이 아니라 전시로 만난다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%83%81%C2%B7%ED%95%98%20%EC%9D%B4%EC%A7%91%ED%8A%B8%20%ED%86%B5%EC%9D%BC%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Narmer%20Palette" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+      <div class="kgroup"><div class="king">—</div><div class="ksites"><details class="site" id="site-memphis" data-wiki="Memphis, Egypt">
+      <summary><span class="nm">멤피스</span><span class="d">D3</span><span class="pt">통일 이집트의 고대 수도 · 람세스2세 거상</span></summary>
+      <div class="detail"><p class="desc">상·하 이집트를 통일한 뒤 세운 고대 이집트 최초의 수도. 나일 삼각주가 시작되는 요충지에 자리해 3천 년 가까이 종교·행정의 중심으로 기능했다. 창조신 프타의 성지였고, '이집트'라는 이름의 어원도 이곳 프타 신전에서 유래했다는 설이 있다. 지금은 도시 대부분이 사라지고 야외 박물관에 람세스 2세의 거대한 석회암 거상이 누운 채 전시돼 있다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EB%A9%94%ED%94%BC%EC%8A%A4%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Memphis%2C%20Egypt" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+    </div>
+  </div>
+
+  <div class="era" style="--c:#A87A28">
+    <div class="label"><div class="ename">고왕국</div><div class="edate">c.2686–2181 BCE</div><div class="etag">피라미드의 시대</div></div>
+    <div class="body">
+      <div class="kgroup"><div class="king">조세르<em>3왕조</em></div><div class="ksites"><details class="site" id="site-djoser" data-wiki="Pyramid of Djoser">
+      <summary><span class="nm">사카라 계단식 피라미드</span><span class="d">D2</span><span class="pt">임호테프 설계 · 인류 최초의 석조 피라미드</span></summary>
+      <div class="detail"><p class="desc">제3왕조 조세르 왕의 무덤으로, 천재 건축가 임호테프가 설계했다. 그전까지 왕의 무덤은 낮은 상자형 마스타바였는데, 이를 6단으로 겹쳐 쌓아 하늘로 올린 인류 최초의 대형 석조 건축물이다. '돌을 다루는 법'을 처음 대규모로 실험한 현장이라, 이후 모든 피라미드가 여기서 출발한다. 주변엔 넓은 제의 단지가 함께 남아 있다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%82%B4%EC%B9%B4%EB%9D%BC%20%EA%B3%84%EB%8B%A8%EC%8B%9D%20%ED%94%BC%EB%9D%BC%EB%AF%B8%EB%93%9C%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Pyramid%20of%20Djoser" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-serapeum" data-wiki="Serapeum of Saqqara">
+      <summary><span class="nm">세라피움</span><span class="d">D2</span><span class="pt">아피스 황소를 모신 지하 묘실</span></summary>
+      <div class="detail"><p class="desc">멤피스의 수호신 프타의 현신으로 여겨진 신성한 '아피스 황소'들을 미라로 만들어 안치한 지하 묘역이다. 어두운 갱도를 따라 무게 수십 톤의 거대한 화강암 석관들이 줄지어 놓여 있어 압도적이다. 신왕국부터 프톨레마이오스 시대까지 대대로 이어졌고, 19세기 마리에트가 발굴했다. 고대 이집트의 동물 숭배와 석공 기술을 함께 보여준다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%84%B8%EB%9D%BC%ED%94%BC%EC%9B%80%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Serapeum%20of%20Saqqara" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+      <div class="kgroup"><div class="king">스네페루<em>4왕조</em></div><div class="ksites"><details class="site" id="site-bent" data-wiki="Bent Pyramid">
+      <summary><span class="nm">다슈르 굴절 피라미드</span><span class="d">D3</span><span class="pt">각도가 중간에 꺾인 과도기 피라미드</span></summary>
+      <div class="detail"><p class="desc">스네페루 왕이 지은 피라미드로, 아래는 급한 각도로 올리다 위쪽에서 완만하게 꺾여 독특한 실루엣을 만든다. 쌓는 도중 구조가 불안정해지자 붕괴를 막으려 각도를 낮춘 것으로 본다. '진짜 피라미드'로 가는 과도기의 시행착오를 그대로 보여주는 귀중한 사례다. 겉을 감싼 매끈한 외장석이 유난히 잘 남아 있다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EB%8B%A4%EC%8A%88%EB%A5%B4%20%EA%B5%B4%EC%A0%88%20%ED%94%BC%EB%9D%BC%EB%AF%B8%EB%93%9C%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Bent%20Pyramid" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-red" data-wiki="Red Pyramid">
+      <summary><span class="nm">붉은 피라미드</span><span class="d">D3</span><span class="pt">최초로 성공한 매끈한 진짜 피라미드</span></summary>
+      <div class="detail"><p class="desc">역시 스네페루가 지은, 처음으로 완성에 성공한 매끈한 정사각뿔 피라미드다. 붉은빛이 도는 석회암 때문에 '붉은 피라미드'라 불린다. 굴절 피라미드의 실패를 교훈 삼아 처음부터 완만한 각도로 안정적으로 쌓아 올렸다. 규모로는 기자 대피라미드에 버금가는, 그 직접적인 선배 격이다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EB%B6%89%EC%9D%80%20%ED%94%BC%EB%9D%BC%EB%AF%B8%EB%93%9C%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Red%20Pyramid" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+      <div class="kgroup"><div class="king">쿠푸·카프레·멘카우레<em>4왕조</em></div><div class="ksites"><details class="site" id="site-giza" data-wiki="Giza pyramid complex">
+      <summary><span class="nm">기자 3대 피라미드</span><span class="d">D10</span><span class="pt">고왕국 건축의 절정</span></summary>
+      <div class="detail"><p class="desc">쿠푸·카프레·멘카우레 세 파라오의 피라미드가 사막에 나란히 선 고왕국 건축의 정점이다. 가장 큰 쿠푸의 대피라미드는 약 230만 개의 돌을 쌓은 것으로, 고대 세계 7대 불가사의 중 유일하게 오늘날까지 남아 있다. 원래는 매끈한 흰 석회암으로 덮여 햇빛에 눈부시게 빛났다. 정밀한 방위 정렬과 규모가 지금도 미스터리와 경외를 자아낸다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EA%B8%B0%EC%9E%90%203%EB%8C%80%20%ED%94%BC%EB%9D%BC%EB%AF%B8%EB%93%9C%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Giza%20pyramid%20complex" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-sphinx" data-wiki="Great Sphinx of Giza">
+      <summary><span class="nm">스핑크스</span><span class="d">D10</span><span class="pt">카프레로 추정되는 사자 몸의 수호상</span></summary>
+      <div class="detail"><p class="desc">사자의 몸에 파라오(카프레로 추정)의 얼굴을 얹은 길이 73m의 거대한 수호 석상이다. 하나의 자연 석회암 언덕을 통째로 깎아 만들었다. 기자 피라미드 단지 동쪽 끝에서 해 뜨는 방향을 바라보며 성역을 지킨다. 코가 사라진 사연 등 숱한 전설과 논쟁을 품은 이집트의 상징이다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%8A%A4%ED%95%91%ED%81%AC%EC%8A%A4%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Great%20Sphinx%20of%20Giza" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+      <div class="kgroup"><div class="king">우나스<em>5왕조</em></div><div class="ksites"><details class="site" id="site-unas" data-wiki="Pyramid of Unas">
+      <summary><span class="nm">우나스 피라미드</span><span class="d">D3</span><span class="pt">최초의 '피라미드 텍스트'를 벽에 새김</span></summary>
+      <div class="detail"><p class="desc">제5왕조 마지막 왕 우나스의 피라미드. 겉은 무너져 흙더미처럼 보이지만, 내부 현실 벽면을 빼곡히 덮은 최초의 '피라미드 텍스트'가 진짜 백미다. 왕의 영혼이 하늘로 오르도록 돕는 주문과 찬가를 별이 총총한 푸른 천장 아래 새겼다. 이후 이집트 장례 문헌(관 텍스트·사자의 서)의 출발점이 된 기념비적 유적이다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%9A%B0%EB%82%98%EC%8A%A4%20%ED%94%BC%EB%9D%BC%EB%AF%B8%EB%93%9C%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Pyramid%20of%20Unas" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+      <div class="kgroup"><div class="king">테티<em>6왕조</em></div><div class="ksites"><details class="site" id="site-teti" data-wiki="Pyramid of Teti">
+      <summary><span class="nm">테티 피라미드</span><span class="d">D3</span><span class="pt">6왕조를 연 왕, 내부에 피라미드 텍스트</span></summary>
+      <div class="detail"><p class="desc">제6왕조를 연 테티 왕의 피라미드로, 겉은 낮은 언덕 같지만 내부로 들어가면 피라미드 텍스트가 새겨진 현실을 볼 수 있다. 우나스에 이어 텍스트 전통을 이어받았다. 주변엔 그의 고관들의 마스타바 무덤이 함께 모여 있다. 사카라의 '숨은 명소'로 꼽힌다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%ED%85%8C%ED%8B%B0%20%ED%94%BC%EB%9D%BC%EB%AF%B8%EB%93%9C%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Pyramid%20of%20Teti" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-kagemni" data-wiki="Kagemni">
+      <summary><span class="nm">카겜니 무덤</span><span class="d">D3</span><span class="pt">테티의 재상 · 생생한 일상 부조</span></summary>
+      <div class="detail"><p class="desc">테티 왕을 섬긴 재상 카겜니의 마스타바 무덤이다. 벽면 부조에 사냥·낚시·가축 사육·요리 같은 일상 장면이 놀랍도록 생생하게 남아 있다. 왕릉의 엄숙한 종교화와 달리, 고대 이집트 사람들의 실제 삶을 엿보게 해준다. 고왕국 귀족 미술의 걸작으로 평가된다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%B9%B4%EA%B2%9C%EB%8B%88%20%EB%AC%B4%EB%8D%A4%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Kagemni" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+    </div>
+  </div>
+
+  <div class="era" style="--c:#5F6E42">
+    <div class="label"><div class="ename">중왕국</div><div class="edate">c.2055–1650 BCE</div><div class="etag">남쪽 변경, 아스완</div></div>
+    <div class="body">
+      <div class="memo">아스완 지역은 고왕국~프톨레마이오스에 걸쳐 사람이 산 국경지대</div>
+      <div class="kgroup"><div class="king">아스완 귀족</div><div class="ksites"><details class="site" id="site-qubbet" data-wiki="Qubbet el-Hawa">
+      <summary><span class="nm">쿠베트 엘 하와</span><span class="d">D4</span><span class="pt">총독·귀족들의 절벽 무덤군</span></summary>
+      <div class="detail"><p class="desc">나일강을 내려다보는 절벽에 파 들어간, 아스완을 다스린 총독·귀족들의 바위 무덤군이다. 남쪽 국경을 지키며 누비아 원정과 교역을 이끈 지방 실력자들이 묻혔다. 무덤 주인의 원정 기록이 새겨져 있어, 고왕국 말~중왕국 남부 변경의 역사를 읽을 수 있다. 강 건너 아스완 시가지 전망도 일품이다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%BF%A0%EB%B2%A0%ED%8A%B8%20%EC%97%98%20%ED%95%98%EC%99%80%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Qubbet%20el-Hawa" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+      <div class="kgroup"><div class="king">—</div><div class="ksites"><details class="site" id="site-elephantine" data-wiki="Elephantine">
+      <summary><span class="nm">엘레판티네 섬</span><span class="d">D4</span><span class="pt">크눔 신을 모신 국경의 오랜 정착지</span></summary>
+      <div class="detail"><p class="desc">아스완의 나일강 한가운데 섬으로, 고대 이집트 남쪽 국경의 관문이자 오래된 성지였다. 물과 홍수를 관장하는 창조신 크눔을 모셨고, 나일강 수위를 재는 '나일로미터'가 남아 홍수 예측과 세금 산정의 현장을 보여준다. 이집트인과 누비아인이 뒤섞여 산 국경 도시의 흔적이 켜켜이 쌓여 있다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%97%98%EB%A0%88%ED%8C%90%ED%8B%B0%EB%84%A4%20%EC%84%AC%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Elephantine" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-sehel" data-wiki="Sehel Island">
+      <summary><span class="nm">세헬 섬</span><span class="d">D4</span><span class="pt">조세르 기근 전설이 새겨진 암각 비문</span></summary>
+      <div class="detail"><p class="desc">아스완 급류 지대에 있는 섬으로, 수백 개의 바위 곳곳에 고대인들이 남긴 비문이 새겨져 있다. 그중 유명한 '기근 석비'는 조세르 왕 시대의 7년 대기근 전설을 담고 있다. 남쪽으로 원정·채석을 떠난 이들이 안전을 빌며 남긴 낙서장 같은 곳이다. 고대 이집트인의 생생한 목소리를 만날 수 있다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%84%B8%ED%97%AC%20%EC%84%AC%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Sehel%20Island" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+    </div>
+  </div>
+
+  <div class="era" style="--c:#1C4E6B">
+    <div class="label"><div class="ename">신왕국</div><div class="edate">c.1550–1069 BCE</div><div class="etag">이번 여정의 심장 · 테베</div></div>
+    <div class="body">
+      <div class="kgroup"><div class="king">하트셉수트<em>18왕조</em></div><div class="ksites"><details class="site" id="site-hatshepsut" data-wiki="Mortuary Temple of Hatshepsut">
+      <summary><span class="nm">하트셉수트 장제전</span><span class="d">D7</span><span class="pt">절벽에 세운 삼단 테라스 신전</span></summary>
+      <div class="detail"><p class="desc">이집트의 대표적 여성 파라오 하트셉수트가 데이르 엘 바흐리의 깎아지른 절벽 아래 세운 장제전이다. 삼단 테라스와 긴 열주 회랑이 뒤편 절벽과 완벽하게 어우러져, 고대와 현대를 통틀어 손꼽히는 건축미를 보여준다. 벽면엔 그녀가 자랑한 '푼트 원정'(향료 무역) 장면이 새겨져 있다. 후대에 지워진 그녀의 이름 흔적도 곳곳에 남아 있다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%ED%95%84%ED%8A%B8%EC%85%89%EC%88%98%ED%8A%B8%20%EC%9E%A5%EC%A0%9C%EC%A0%84%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Mortuary%20Temple%20of%20Hatshepsut" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-obelisk" data-wiki="Unfinished obelisk">
+      <summary><span class="nm">미완성 오벨리스크</span><span class="d">D4</span><span class="pt">균열로 버려진 최대 크기 오벨리스크</span></summary>
+      <div class="detail"><p class="desc">아스완 화강암 채석장에 절반쯤 깎이다 버려진 채 누워 있는 거대한 오벨리스크다. 완성됐다면 높이 42m, 무게 1,000톤이 넘는 사상 최대 크기였을 것으로 추정된다. 채석 도중 몸통에 균열이 생겨 포기됐고, 덕분에 고대인들이 통돌을 어떻게 떼어냈는지를 그대로 보여주는 '작업 중단된 교과서'가 됐다. 하트셉수트가 주문한 것으로 본다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EB%AF%B8%EC%99%84%EC%84%B1%20%EC%98%A4%EB%B2%A8%EB%A6%AC%EC%8A%A4%ED%81%AC%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Unfinished%20obelisk" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+      <div class="kgroup"><div class="king">투트모세 3세<em>18왕조</em></div><div class="ksites"><details class="site" id="site-karnak" data-wiki="Karnak">
+      <summary><span class="nm">카르나크 신전</span><span class="d">D6</span><span class="pt">주신 아문 · 이집트 최대 신전 복합체</span></summary>
+      <div class="detail"><p class="desc">주신 아문에게 바친, 이집트에서 가장 크고 오래 증축된 신전 복합체다. 중왕국부터 프톨레마이오스 시대까지 약 30명의 파라오가 1,500년에 걸쳐 저마다 무언가를 보태며 '신들의 도시'를 이뤘다. 거대한 탑문, 오벨리스크, 성호(聖湖), 스핑크스 참배로가 끝없이 이어져 규모로 압도한다. 룩소르 신전과 참배로로 연결돼 있었다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%B9%B4%EB%A5%B4%EB%82%98%ED%81%AC%20%EC%8B%A0%EC%A0%84%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Karnak" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+      <div class="kgroup"><div class="king">아멘호테프 3세<em>18왕조</em></div><div class="ksites"><details class="site" id="site-memnon" data-wiki="Colossi of Memnon">
+      <summary><span class="nm">멤논의 거상</span><span class="d">D7</span><span class="pt">사라진 장제전을 지키는 두 거상</span></summary>
+      <div class="detail"><p class="desc">아멘호테프 3세의 거대한 장제전 입구를 지키던 두 개의 석상으로, 지금은 신전은 사라지고 거상만 들판에 남았다. 각각 높이 18m에 이른다. 지진으로 갈라진 한쪽 상이 새벽마다 소리를 냈다는 이야기가 퍼져, 그리스·로마인들이 '노래하는 멤논'이라 부르며 순례했다. 발치엔 그들이 남긴 낙서가 새겨져 있다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EB%A9%B4%EB%85%BC%EC%9D%98%20%EA%B1%B0%EC%83%81%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Colossi%20of%20Memnon" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-luxor-temple" data-wiki="Luxor Temple">
+      <summary><span class="nm">룩소르 신전</span><span class="d">D7</span><span class="pt">주신 아문 · 오페트 축제의 중심</span></summary>
+      <div class="detail"><p class="desc">나일강변 룩소르 도심 한복판에 있는 신전으로, 아멘호테프 3세가 짓고 람세스 2세가 크게 확장했다. 카르나크와 스핑크스 참배로로 이어져, 매년 '오페트 축제' 때 신상들이 이 길을 따라 행진했다. 밤에 조명을 밝히면 거대한 탑문과 열주가 특히 극적으로 보인다. 후대엔 로마 군영, 모스크, 교회까지 층층이 얹힌 '살아있는 역사'다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EB%A3%A9%EC%86%8C%EB%A5%B4%20%EC%8B%A0%EC%A0%84%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Luxor%20Temple" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+      <div class="kgroup"><div class="king">투탕카멘<em>18왕조</em></div><div class="ksites"><details class="site" id="site-tut-kv62" data-wiki="KV62">
+      <summary><span class="nm">왕들의 계곡 KV62</span><span class="d">D8</span><span class="pt">거의 온전히 발견된 소년왕의 무덤</span></summary>
+      <div class="detail"><p class="desc">소년왕 투탕카멘의 무덤으로, 1922년 하워드 카터가 거의 도굴되지 않은 상태로 발견해 세계를 뒤흔들었다. 규모는 계곡에서 가장 작은 축이지만, 황금 마스크를 비롯한 5,000점이 넘는 부장품이 고스란히 쏟아져 나왔다. '파라오의 저주' 전설까지 얹혀 20세기 최대의 고고학 발견으로 남았다. 내부엔 지금도 그의 미라가 안치돼 있다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%99%95%EB%93%A4%EC%9D%98%20%EA%B3%84%EA%B3%A1%20KV62%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/KV62" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-gem-gold" data-wiki="Grand Egyptian Museum">
+      <summary><span class="nm">GEM 황금 유물</span><span class="d">D9</span><span class="pt">투탕카멘 부장품 전체를 한자리에서</span></summary>
+      <div class="detail"><p class="desc">투탕카멘 무덤에서 나온 부장품 전체가 이곳 대이집트박물관(GEM)에 한자리로 모였다. 그 유명한 황금 마스크와 여러 겹의 관, 왕좌, 전차, 장신구까지 처음으로 통째로 전시된다. 3천 년 전 한 소년왕의 사후세계 준비물을 한눈에 볼 수 있는, 이번 여정의 하이라이트다. 기자 피라미드가 보이는 초현대식 건물에 있다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=GEM%20%ED%99%A9%EA%B8%88%20%EC%9C%A0%EB%AC%BC%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Grand%20Egyptian%20Museum" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+      <div class="kgroup"><div class="king">세티 1세<em>19왕조</em></div><div class="ksites"><details class="site" id="site-seti-kv17" data-wiki="KV17">
+      <summary><span class="nm">왕들의 계곡 KV17</span><span class="d">D8</span><span class="pt">계곡에서 가장 길고 정교한 왕릉</span></summary>
+      <div class="detail"><p class="desc">세티 1세의 무덤으로, 왕들의 계곡에서 가장 길고(100m 이상) 가장 정교한 무덤으로 꼽힌다. 천장엔 별자리, 벽엔 사후세계 여정을 그린 채색 부조가 보존 상태 좋게 남아 있다. 19세기 벨초니가 발견해 서양에 큰 충격을 줬다. 예술성만 놓고 보면 투탕카멘 무덤을 능가한다는 평가도 있다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%99%95%EB%93%A4%EC%9D%98%20%EA%B3%84%EA%B3%A1%20KV17%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/KV17" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-karnak-hall" data-wiki="Karnak">
+      <summary><span class="nm">카르나크 대열주실</span><span class="d">D6</span><span class="pt">134개 거대 기둥의 숲</span></summary>
+      <div class="detail"><p class="desc">카르나크 신전 안, 5,000㎡ 공간에 134개의 거대한 기둥이 숲처럼 늘어선 홀이다. 가운데 12개 기둥은 높이 21m에 달해, 그 아래 서면 인간이 한없이 작게 느껴진다. 세티 1세와 람세스 2세 대에 완성됐다. 기둥마다 채색 부조가 빼곡해, 고대 신전이 얼마나 화려했는지를 상상하게 한다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%B9%B4%EB%A5%B4%EB%82%98%ED%81%AC%20%EB%8C%80%EC%97%B4%EC%A3%BC%EC%8B%A4%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Karnak" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+      <div class="kgroup"><div class="king">람세스 2세<em>19왕조</em></div><div class="ksites"><details class="site" id="site-abusimbel" data-wiki="Abu Simbel">
+      <summary><span class="nm">아부심벨 대·소신전</span><span class="d">D5</span><span class="pt">절벽을 통째로 깎은 거상 4구의 위용</span></summary>
+      <div class="detail"><p class="desc">람세스 2세가 누비아의 절벽을 통째로 깎아 만든 두 개의 신전이다. 대신전 입구엔 높이 20m의 그의 거상 4구가 앉아 남쪽을 노려보며 이집트의 위세를 과시한다. 1년에 두 번, 햇빛이 60m 안쪽 성소까지 들어와 신상들을 비추도록 설계됐다. 20세기 아스완 하이댐 수몰 위기 때 블록으로 잘라 통째로 옮긴, 유네스코 구조 사업의 상징이다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%95%84%EB%B6%80%EC%8B%AC%EB%B2%A8%20%EB%8C%80%C2%B7%EC%86%8C%EC%8B%A0%EC%A0%84%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Abu%20Simbel" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-luxor-pylon" data-wiki="Luxor Temple">
+      <summary><span class="nm">룩소르 신전 탑문</span><span class="d">D7</span><span class="pt">람세스2세가 세운 거대 탑문과 거상</span></summary>
+      <div class="detail"><p class="desc">룩소르 신전 정면을 장식하는 거대한 탑문(파일런)으로, 람세스 2세가 세웠다. 앞에는 그의 앉은 거상들과 오벨리스크가 서 있었는데, 오벨리스크 하나는 지금 파리 콩코르드 광장에 있다. 벽면엔 그가 벌인 카데시 전투 장면이 새겨져 있다. 신전의 입구를 장엄하게 여는 얼굴 역할을 한다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EB%A3%A9%EC%86%8C%EB%A5%B4%20%EC%8B%A0%EC%A0%84%20%ED%83%91%EB%AC%B8%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Luxor%20Temple" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+      <div class="kgroup"><div class="king">람세스 3세<em>20왕조</em></div><div class="ksites"><details class="site" id="site-habu" data-wiki="Medinet Habu (temple)">
+      <summary><span class="nm">메디넷 하부</span><span class="d">D7</span><span class="pt">채색이 남은 요새형 장제전</span></summary>
+      <div class="detail"><p class="desc">람세스 3세의 장제전으로, 성벽에 둘러싸여 요새처럼 견고하다. 바깥벽엔 그가 물리친 '바다 민족'과의 대규모 전투 장면이 거대한 부조로 새겨져 있다. 지붕이 남은 부분엔 3천 년 전 채색 안료가 놀랍도록 선명하게 남아 있다. 상대적으로 덜 붐벼 채색 신전의 원래 모습을 차분히 감상하기 좋다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EB%A9%94%EB%94%94%EB%84%B7%20%ED%95%98%EB%B6%80%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Medinet%20Habu%20%28temple%29" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+      <div class="kgroup"><div class="king">그 시대 사람들</div><div class="ksites"><details class="site" id="site-deir-medina" data-wiki="Deir el-Medina">
+      <summary><span class="nm">데이르 엘 메디나</span><span class="d">D7</span><span class="pt">왕릉을 만든 장인들의 마을</span></summary>
+      <div class="detail"><p class="desc">왕들의 계곡의 왕릉을 파고 꾸민 장인·화가들이 대를 이어 살던 마을이다. 왕이 아니라 '보통 사람들'의 집터·출근 기록·파업 문서·편지까지 남아, 고대 이집트의 일상을 이례적으로 생생하게 보여준다. 장인들이 자기 솜씨로 꾸민 작지만 화려한 무덤도 함께 남아 있다. 고대 노동자 공동체를 엿보는 드문 창이다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EB%8D%B0%EC%9D%B4%EB%A5%B4%20%EC%97%98%20%EB%A9%94%EB%94%94%EB%82%98%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Deir%20el-Medina" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-nobles-tombs" data-wiki="Theban Necropolis">
+      <summary><span class="nm">귀족 무덤군 7곳</span><span class="d">D7</span><span class="pt">신왕국 엘리트의 채색 벽화 무덤</span></summary>
+      <div class="detail"><p class="desc">룩소르 서안 언덕에 자리한, 재상·서기·사제 등 신왕국 고위 관료들의 무덤군이다. 엄숙한 왕릉과 달리 연회·사냥·수확 같은 일상과 축제 장면이 밝은 채색 벽화로 가득하다. 당시 상류층의 삶과 미의식을 색채 그대로 느낄 수 있다. 여러 무덤 중 몇을 골라 둘러본다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EA%B7%80%EC%A1%B1%20%EB%AC%B4%EB%8D%A4%EA%B5%B0%207%EA%B3%B3%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Theban%20Necropolis" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+    </div>
+  </div>
+
+  <div class="era" style="--c:#7A5A48">
+    <div class="label"><div class="ename">후기왕조</div><div class="edate">c.664–332 BCE</div><div class="etag">쇠퇴와 부흥</div></div>
+    <div class="body"><div class="memo">직접 방문 유적은 없고, 박물관(타흐리르·NMEC) 유물로 이 시대를 만남</div></div>
+  </div>
+
+  <div class="era" style="--c:#8C5A6B">
+    <div class="label"><div class="ename">프톨레마이오스</div><div class="edate">332–30 BCE</div><div class="etag">그리스계 파라오 · 신전 건축</div></div>
+    <div class="body">
+      <div class="kgroup"><div class="king">—</div><div class="ksites"><details class="site" id="site-edfu" data-wiki="Temple of Edfu">
+      <summary><span class="nm">에드푸 호루스 신전</span><span class="d">D6</span><span class="pt">주신 호루스 · 가장 완벽하게 보존된 신전</span></summary>
+      <div class="detail"><p class="desc">매의 신 호루스에게 바친 프톨레마이오스 시대 신전으로, 이집트에서 가장 완벽하게 보존된 신전으로 꼽힌다. 탑문부터 성소까지 구조가 거의 온전해, '이집트 신전은 원래 이렇게 생겼다'를 통째로 보여준다. 벽면 부조엔 호루스와 세트의 신화, 제의 절차가 상세히 새겨져 '돌에 쓴 교과서'라 불린다. 입구의 검은 호루스 매 석상이 상징적이다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%97%90%EB%93%9C%ED%91%B8%20%ED%98%B8%EB%A3%A8%EC%8A%A4%20%EC%8B%A0%EC%A0%84%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Temple%20of%20Edfu" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-philae" data-wiki="Philae">
+      <summary><span class="nm">필라에 이시스 신전</span><span class="d">D5</span><span class="pt">주신 이시스 · 숭배가 가장 오래 이어진 성지</span></summary>
+      <div class="detail"><p class="desc">나일강 섬 위에 세워진, 여신 이시스를 모신 신전이다. 이시스 숭배가 고대 이집트에서 가장 오래(서기 6세기까지) 살아남은 마지막 성지로, 이집트 종교의 황혼을 상징한다. 프톨레마이오스와 로마가 함께 지어 그리스·이집트 양식이 섞여 있다. 아스완 댐 수몰을 피해 인근 아길키아 섬으로 통째로 옮겨졌다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%ED%95%84%EB%9D%BC%EC%97%90%20%EC%9D%B4%EC%8B%9C%EC%8A%A4%20%EC%8B%A0%EC%A0%84%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Philae" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-dendera" data-wiki="Dendera Temple complex">
+      <summary><span class="nm">덴데라 하토르 신전</span><span class="d">D8</span><span class="pt">주신 하토르 · '덴데라 황도대'로 유명</span></summary>
+      <div class="detail"><p class="desc">사랑·기쁨·음악의 여신 하토르에게 바친 신전으로, 프톨레마이오스~로마 시대에 지어졌다. 최근 복원으로 되살아난 화려한 채색 천장과, 별자리를 그린 '덴데라 황도대' 부조로 유명하다. 지하 납골실과 옥상 예배당까지 온전히 남아 둘러보는 재미가 크다. 외벽엔 클레오파트라와 그 아들 카이사리온의 모습도 새겨져 있다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EB%8D%B4%EB%8D%B0%EB%9D%BC%20%ED%95%98%ED%86%A0%EB%A5%B4%20%EC%8B%A0%EC%A0%84%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Dendera%20Temple%20complex" target="_blank" rel="noopener">위키백과</a></div>
+      </div>
+      </details></div></div>
+    </div>
+  </div>
+
+  <div class="era" style="--c:#6B4A3A">
+    <div class="label"><div class="ename">로마 시대</div><div class="edate">30 BCE~</div><div class="etag">신전의 마지막 장</div></div>
+    <div class="body"><div class="memo">필라에·덴데라에 로마가 증축 — 이시스 숭배가 여기서 가장 오래 살아남음</div></div>
+  </div>
+
+  <div class="era" style="--c:#2F6B60">
+    <div class="label"><div class="ename">이슬람 시대</div><div class="edate">고대 이후</div><div class="etag">중세 카이로</div></div>
+    <div class="body">
+      <div class="kgroup"><div class="king">—</div><div class="ksites"><details class="site" id="site-citadel" data-wiki="Cairo Citadel">
+      <summary><span class="nm">살라딘 성채</span><span class="d">D11</span><span class="pt">살라딘의 요새 + 무함마드 알리 모스크</span></summary>
+      <div class="detail"><p class="desc">12세기 이슬람 영웅 살라딘이 십자군에 맞서 카이로에 쌓은 중세 요새다. 언덕 위에서 옛 카이로 전경과 저 멀리 기자 피라미드까지 조망된다. 성채 안엔 19세기 무함마드 알리가 세운 웅장한 오스만식 모스크가 자리해 스카이라인을 이룬다. 고대 이후 이슬람 이집트의 역사를 보여주는 전환점이다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%82%B4%EB%9D%BC%EB%94%98%20%EC%84%B1%EC%B1%84%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Cairo%20Citadel" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details><details class="site" id="site-khalili" data-wiki="Khan el-Khalili">
+      <summary><span class="nm">칸 엘 칼릴리 시장</span><span class="d">D10</span><span class="pt">14세기부터 이어진 카이로의 대시장</span></summary>
+      <div class="detail"><p class="desc">14세기부터 이어져 온 카이로의 대표적인 재래시장이다. 금속·유리 공예, 향신료, 기념품 가게가 미로 같은 골목에 빼곡히 얽혀 있다. 오래된 카페에서 차와 물담배를 즐기며 중세 카이로의 활기를 그대로 느낄 수 있다. 흥정과 사람 구경 자체가 여행의 한 장면이 되는 곳이다.</p><div class="imgs"></div>
+      <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%B9%B8%20%EC%97%98%20%EC%B9%BC%EB%A6%B4%EB%A6%AC%20%EC%8B%9C%EC%9E%A5%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Khan%20el-Khalili" target="_blank" rel="noopener">위키백과</a></div></div>
+      </details></div></div>
+    </div>
+  </div>
+
+  <div class="aside">
+    <div class="aside-label">시대 밖 · 모든 시대의 유물을 한자리에서</div>
+    <div class="era aside-era" style="--c:#666">
+      <div class="label"><div class="ename">박물관</div><div class="edate">시대 통사</div><div class="etag">여정 곳곳에서</div></div>
+      <div class="body">
+        <div class="kgroup"><div class="king">—</div><div class="ksites"><details class="site" id="site-nubian-mus" data-wiki="Nubia Museum">
+        <summary><span class="nm">누비안 박물관</span><span class="d">D4</span><span class="pt">누비아 문명을 다루는 전문 박물관</span></summary>
+        <div class="detail"><p class="desc">아스완에 있는, 누비아 지역의 역사와 문화를 집중 조명하는 박물관이다. 아스완 하이댐 건설로 수몰될 뻔한 유적과 유물을 구해 보존·전시한다. 파라오 시대뿐 아니라 선사·기독교·이슬람기까지 누비아 문명의 긴 흐름을 담았다. 이집트 본류와는 또 다른, 남쪽 문화의 결을 만날 수 있다.</p><div class="imgs"></div>
+        <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EB%88%84%EB%B9%84%EC%95%88%20%EB%B0%95%EB%AC%BC%EA%B4%80%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Nubia%20Museum" target="_blank" rel="noopener">위키백과</a></div></div>
+        </details><details class="site" id="site-luxor-mus" data-wiki="Luxor Museum">
+        <summary><span class="nm">룩소르 박물관</span><span class="d">D6</span><span class="pt">정선된 신왕국 걸작 위주의 알찬 전시</span></summary>
+        <div class="detail"><p class="desc">규모는 작지만 정선된 신왕국 걸작만 골라 모은 밀도 높은 박물관이다. 카르나크·왕들의 계곡 등 인근 유적에서 나온 조각·유물이 세련된 조명 아래 전시된다. 방대한 카이로 박물관과 달리 하나하나 여유 있게 감상하기 좋다. 왕들의 미라 몇 구도 이곳에 있다.</p><div class="imgs"></div>
+        <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EB%A3%A9%EC%86%8C%EB%A5%B4%20%EB%B0%95%EB%AC%BC%EA%B4%80%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Luxor%20Museum" target="_blank" rel="noopener">위키백과</a></div></div>
+        </details><details class="site" id="site-gem-mus" data-wiki="Grand Egyptian Museum">
+        <summary><span class="nm">대이집트박물관 GEM</span><span class="d">D9</span><span class="pt">투탕카멘 컬렉션을 품은 최신 대박물관</span></summary>
+        <div class="detail"><p class="desc">기자 피라미드 곁에 새로 지은 세계 최대급 이집트 박물관이다. 투탕카멘 컬렉션 전체를 비롯해 10만 점 이상의 유물을 최신 전시 기법으로 선보인다. 거대한 계단 갤러리와 유리 파사드 너머로 피라미드가 보이는 설계가 유명하다. 흩어져 있던 이집트 문화재를 집대성한 상징적 공간이다.</p><div class="imgs"></div>
+        <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EB%8C%80%EC%9D%B4%EC%A7%91%ED%8A%B8%EB%B0%95%EB%AC%BC%EA%B4%80%20GEM%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Grand%20Egyptian%20Museum" target="_blank" rel="noopener">위키백과</a></div></div>
+        </details><details class="site" id="site-nmec" data-wiki="National Museum of Egyptian Civilization">
+        <summary><span class="nm">이집트 문명 박물관</span><span class="d">D10</span><span class="pt">역대 왕들의 미라를 전시(NMEC)</span></summary>
+        <div class="detail"><p class="desc">카이로에 있는 국립 이집트 문명 박물관(NMEC)으로, 선사부터 현대까지 이집트 문명의 통사를 다룬다. 하이라이트는 지하의 '왕들의 미라 전시관'으로, 람세스 2세 등 역대 파라오의 미라를 경건한 분위기에서 볼 수 있다. 2021년 미라들이 성대한 퍼레이드로 이곳에 옮겨져 화제가 됐다. 이집트 정체성의 흐름을 정리해 보여준다.</p><div class="imgs"></div>
+        <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%9D%B4%EC%A7%91%ED%8A%B8%20%EB%AC%B8%EB%AA%85%20%EB%B0%95%EB%AC%BC%EA%B4%80%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/National%20Museum%20of%20Egyptian%20Civilization" target="_blank" rel="noopener">위키백과</a></div></div>
+        </details><details class="site" id="site-tahrir" data-wiki="Egyptian Museum">
+        <summary><span class="nm">이집트 박물관(타흐리르)</span><span class="d">D11</span><span class="pt">100여 년 역사의 유서 깊은 본관</span></summary>
+        <div class="detail"><p class="desc">카이로 타흐리르 광장에 있는 100년이 넘은 붉은 본관 박물관이다. 오랫동안 세계 최대의 고대 이집트 컬렉션의 본거지였고, 지금도 방대한 소장품을 자랑한다. 다소 낡았지만 유물이 빼곡한 '보물창고' 특유의 밀도와 분위기가 매력이다. GEM 개관 이후엔 역할을 나눠 핵심 소장품을 이어간 다.</p><div class="imgs"></div>
+        <div class="lnk"><a href="https://www.google.com/search?tbm=isch&amp;q=%EC%9D%B4%EC%A7%91%ED%8A%B8%20%EB%B0%95%EB%AC%BC%EA%B4%80%28%ED%83%80%ED%9D%90%EB%A6%AC%EB%A5%B4%29%20%EC%9D%B4%EC%A7%91%ED%8A%B8" target="_blank" rel="noopener">Google 이미지에서 보기</a> · <a href="https://en.wikipedia.org/wiki/Egyptian%20Museum" target="_blank" rel="noopener">위키백과</a></div></div>
+        </details></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// 일자별 일정 방문지 클릭 시 해당 연표 위치로 이동 & details 자동 펼침 & 반짝임 효과
+function jumpSite(e, siteId) {
+  if (e) e.preventDefault();
+  var el = document.getElementById(siteId);
+  if (!el) return;
+  
+  // details 펼치기
+  el.open = true;
+  
+  // 부드러운 스크롤 이동
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  
+  // 하이라이트 효과 적용
+  el.classList.remove('highlight-site');
+  void el.offsetWidth; // trigger reflow
+  el.classList.add('highlight-site');
+}
+
+// 실시간 검색 기능 (Live Search)
+document.addEventListener('DOMContentLoaded', function() {
+  var input = document.getElementById('searchInput');
+  if (!input) return;
+
+  input.addEventListener('input', function() {
+    var q = input.value.trim().toLowerCase();
+    var sites = document.querySelectorAll('details.site');
+    var kgroups = document.querySelectorAll('.kgroup');
+    var eras = document.querySelectorAll('.era');
+
+    if (!q) {
+      sites.forEach(function(s) {
+        s.style.display = '';
+        s.classList.remove('search-matched');
+      });
+      kgroups.forEach(function(k) { k.style.display = ''; });
+      eras.forEach(function(e) { e.style.display = ''; });
+      return;
+    }
+
+    sites.forEach(function(s) {
+      var text = s.innerText.toLowerCase();
+      var wiki = (s.dataset.wiki || '').toLowerCase();
+      if (text.includes(q) || wiki.includes(q)) {
+        s.style.display = '';
+        s.open = true;
+        s.classList.add('search-matched');
+      } else {
+        s.style.display = 'none';
+        s.classList.remove('search-matched');
+      }
+    });
+
+    // 검색 결과가 있는 kgroup / era 만 노출
+    kgroups.forEach(function(k) {
+      var visibleSites = k.querySelectorAll('details.site[style*="display: none"]');
+      var allSites = k.querySelectorAll('details.site');
+      if (allSites.length > 0 && visibleSites.length === allSites.length) {
+        var kText = k.innerText.toLowerCase();
+        if (!kText.includes(q)) {
+          k.style.display = 'none';
+        } else {
+          k.style.display = '';
+        }
+      } else {
+        k.style.display = '';
+      }
+    });
+  });
+});
+
+// Wikimedia 사진 지연 로딩
+document.querySelectorAll('details.site').forEach(function(d){
+  d.addEventListener('toggle',function(){
+    if(!d.open || d.dataset.loaded) return;
+    d.dataset.loaded='1';
+    var box=d.querySelector('.imgs'); var title=d.dataset.wiki; if(!box||!title) return;
+    fetchImgs(title).then(function(urls){
+      if(!urls.length){ box.remove(); return; }
+      box.innerHTML='';
+      urls.forEach(function(u){
+        var s=document.createElement('div'); s.className='slot';
+        var im=document.createElement('img'); im.src=u; im.loading='lazy';
+        im.onerror=function(){ s.remove(); }; s.appendChild(im); box.appendChild(s);
+      });
+    }).catch(function(){ box.remove(); });
+  });
+});
+async function fetchImgs(title){
+  var base='https://en.wikipedia.org/api/rest_v1/page/'; var urls=[];
+  try{ var s=await fetch(base+'summary/'+encodeURIComponent(title)).then(r=>r.json());
+    if(s&&s.thumbnail&&s.thumbnail.source) urls.push(s.thumbnail.source.replace(/\/\d+px-/,'/400px-')); }catch(e){}
+  try{ var m=await fetch(base+'media-list/'+encodeURIComponent(title)).then(r=>r.json());
+    (m.items||[]).forEach(function(it){
+      if(it.type!=='image'||!it.srcset||!it.srcset.length) return;
+      var src=it.srcset[it.srcset.length-1].src; if(src.indexOf('//')===0) src='https:'+src;
+      var low=src.toLowerCase();
+      if(low.match(/\.svg|_map|location|\.ogg|hiero|icon|commons-logo|flag_/)) return;
+      urls.push(src);
+    }); }catch(e){}
+  return [...new Set(urls)].slice(0,3);
+}
+</script>
+</body>
+</html>

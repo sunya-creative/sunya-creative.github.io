@@ -13,8 +13,9 @@
   html{-webkit-text-size-adjust:100%}
   body{font-family:'Noto Sans KR',sans-serif;background:#fff;color:var(--ink);
     line-height:1.3;padding:20px 14px 50px;display:flex;justify-content:center;
-    -webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .sheet{width:100%;max-width:780px;background:#fff}
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+    word-break:keep-all;overflow-wrap:break-word}
+  .sheet{width:100%;max-width:780px;background:#fff;word-break:keep-all}
 
   /* 상단 컨트롤 바 (검색창 + 이집트 신 버튼) */
   .top-bar{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:nowrap}
@@ -28,7 +29,7 @@
   .route b{color:var(--ink);font-weight:500}
 
   .ih{font-size:15px;font-weight:700;margin:0 0 3px;padding-bottom:8px;border-bottom:1.5px solid var(--ink)}
-  .itin{width:100%;border-collapse:collapse;font-size:11px;margin-top:2px}
+  .itin{width:100%;border-collapse:collapse;font-size:11px;margin-top:2px;word-break:keep-all}
   .itin th{text-align:left;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
     color:var(--soft);font-weight:700;padding:6px 8px 9px;border-bottom:1.5px solid var(--ink)}
   .itin td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.3}
@@ -45,11 +46,11 @@
   .itin-detail-cell{padding:8px 10px 12px !important;border-bottom:1.5px solid #e2e2e2 !important;background-color:#fbfbfb}
   .sub-itin-wrap{border:1px solid #dcdcdc;border-radius:4px;overflow:hidden;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.02)}
   .sub-itin{width:100%;border-collapse:collapse;font-size:10.5px}
-  .sub-itin th{background:#eeeeee;color:#333333;font-weight:700;padding:6px 8px;font-size:10px;text-align:left;border-bottom:1px solid #dcdcdc}
-  .sub-itin td{padding:6px 8px;border-bottom:1px solid #eeeeee;vertical-align:top;line-height:1.4;color:#222222}
+  .sub-itin th{background:#eeeeee;color:#333333;font-weight:700;padding:6px 6px;font-size:10px;text-align:left;border-bottom:1px solid #dcdcdc}
+  .sub-itin td{padding:6px 6px;border-bottom:1px solid #eeeeee;vertical-align:top;line-height:1.4;color:#222222}
   .sub-itin tr:last-child td{border-bottom:none}
-  .sub-itin .col-reg{width:75px;font-weight:600;color:#444}
-  .sub-itin .col-time{width:95px;color:#666;font-family:monospace;font-size:10px}
+  .sub-itin .col-reg, .sub-itin th.col-reg{width:85px}
+  .sub-itin .col-time, .sub-itin th.col-time{width:57px;color:#666;font-family:monospace;font-size:10px}
   .sub-itin .hotel-badge{display:inline-block;margin-top:3px;padding:2px 6px;background:#f5f5f5;border:1px solid #dddddd;border-radius:3px;font-size:9.5px;color:#333333}
   .sub-itin .meal-badge{display:inline-block;margin-top:3px;padding:1px 5px;background:#f5f5f5;border:1px solid #dddddd;border-radius:3px;font-size:9px;color:#555555}
   .fl{display:inline-block;font-size:9.5px;color:var(--soft);border:1px solid var(--line);padding:0 5px;border-radius:2px;margin-left:5px}
@@ -115,7 +116,7 @@
   .aside-era{border-top:none}
   .aside-era .label{border-left-style:dashed}
 
-  @media (max-width:620px){
+  @media (max-width:768px){
     .era{flex-direction:column}
     .label{flex:none;border-left:3px solid var(--c);padding:6px 0 4px 8px}
     .body{border-left:3px solid var(--c);padding-left:8px}
@@ -124,7 +125,18 @@
     .ksites{width:100%}
     summary{grid-template-columns:1fr auto;gap:1px 8px}
     summary .pt{grid-column:1 / -1}
-    .itin .era-cell{width:104px;font-size:10.5px}
+    .itin{table-layout:fixed !important;width:100% !important}
+    .itin th:first-child{width:62px}
+    .itin th:last-child{width:62px}
+    .itin .day{width:62px;white-space:normal;font-size:10.5px;line-height:1.25}
+    .itin .era-cell{width:62px;font-size:10px;white-space:normal;padding-left:6px;line-height:1.25}
+    .itin td{word-break:keep-all;overflow-wrap:break-word}
+    .itin-detail-cell{padding:4px 2px 8px !important;overflow:hidden !important}
+    .sub-itin-wrap{overflow:hidden !important;max-width:100% !important}
+    .sub-itin{table-layout:fixed !important;width:100% !important}
+    .sub-itin th, .sub-itin td{padding:4px 2px !important;min-width:0 !important;word-break:keep-all;overflow-wrap:break-word}
+    .sub-itin .col-reg, .sub-itin th.col-reg{width:12px !important;max-width:12px !important;min-width:0 !important;overflow:hidden;word-break:keep-all;white-space:normal}
+    .sub-itin .col-time, .sub-itin th.col-time{width:10px !important;max-width:10px !important;min-width:0 !important;overflow:hidden;word-break:keep-all;white-space:normal}
     .top-bar{flex-direction:row;align-items:center}
   }
   @page{ size:A4; margin:8mm }
@@ -164,20 +176,20 @@
         <tr id="itin-main-1"><td class="day" onclick="toggleDayDetail(1)">1일차 (1/2, 토)</td><td>27년 1.2(토) 인천공항 22시 집결 / 익일 00시 20분 출발 <span class="fl">카타르 항공 QR859</span></td><td class="era-cell" style="--c:#999">이동</td></tr>
         <tr class="itin-detail-row" id="itin-detail-1"><td colspan="3" class="itin-detail-cell">
           <div class="sub-itin-wrap"><table class="sub-itin">
-            <thead><tr><th style="width:85px">지역</th><th style="width:95px">시간</th><th>여행 일정</th></tr></thead>
+            <thead><tr><th class="col-reg">지역</th><th class="col-time">시간</th><th>여행 일정</th></tr></thead>
             <tbody>
               <tr><td class="col-reg">인천</td><td class="col-time">20:30</td><td>인천국제공항 집결 (제1터미널 3층 K카운터)</td></tr>
-              <tr><td class="col-reg">인천 → 도하</td><td class="col-time">00:20 - 04:50</td><td>인천(ICN) 1/3 00:20 → 도하(DOH) 1/3 04:50 ㅣ 카타르항공 QR859 약 10시간 30분 소요<br>도하 하마드 국제공항 도착 후, 환승 수속</td></tr>
+              <tr><td class="col-reg">인천 → 도하</td><td class="col-time">00:20<br>- 04:50</td><td>인천(ICN) 1/3 00:20 → 도하(DOH) 1/3 04:50 ㅣ 카타르항공 QR859 약 10시간 30분 소요<br>도하 하마드 국제공항 도착 후, 환승 수속</td></tr>
             </tbody>
           </table></div>
         </td></tr>
         <tr id="itin-main-2"><td class="day" onclick="toggleDayDetail(2)">2일차 (1/3, 일)</td><td>이집트 도착 · 사카라 지역 탐방(<a href="#site-djoser-south" class="itin-link" onclick="jumpSite(event,'site-djoser-south')">조세르 남쪽 무덤</a> · <a href="#site-djoser" class="itin-link" onclick="jumpSite(event,'site-djoser')">계단식 피라미드</a> · <a href="#site-serapeum" class="itin-link" onclick="jumpSite(event,'site-serapeum')">세라피움</a>)</td><td class="era-cell" style="--c:#A87A28">고왕국</td></tr>
         <tr class="itin-detail-row" id="itin-detail-2"><td colspan="3" class="itin-detail-cell">
           <div class="sub-itin-wrap"><table class="sub-itin">
-            <thead><tr><th style="width:85px">지역</th><th style="width:95px">시간</th><th>여행 일정</th></tr></thead>
+            <thead><tr><th class="col-reg">지역</th><th class="col-time">시간</th><th>여행 일정</th></tr></thead>
             <tbody>
-              <tr><td class="col-reg">도하 → 카이로</td><td class="col-time">08:20 - 11:05</td><td>도하(DOH) 1/3 08:20 → 카이로(CAI) 1/3 11:05 ㅣ 카타르항공 QR1303 약 3시간 45분 소요</td></tr>
-              <tr><td class="col-reg">카이로</td><td class="col-time">13:00 - 19:00</td><td>카이로 공항 도착 후, 입국 수속 및 가이드 미팅<br>사카라로 이동<br><b>▣ 사카라</b>: 계단식 피라미드, 세라피움</td></tr>
+              <tr><td class="col-reg">도하 → 카이로</td><td class="col-time">08:20<br>- 11:05</td><td>도하(DOH) 1/3 08:20 → 카이로(CAI) 1/3 11:05 ㅣ 카타르항공 QR1303 약 3시간 45분 소요</td></tr>
+              <tr><td class="col-reg">카이로</td><td class="col-time">13:00<br>- 19:00</td><td>카이로 공항 도착 후, 입국 수속 및 가이드 미팅<br>사카라로 이동<br><b>▣ 사카라</b>: 계단식 피라미드, 세라피움</td></tr>
               <tr><td class="col-reg">카이로</td><td class="col-time">19:00</td><td>호텔 체크인 후, 석식 및 휴식<br><span class="hotel-badge">STEIGENBERGER PYRAMIDS CAIRO 5★ 혹은 동급</span></td></tr>
             </tbody>
           </table></div>
@@ -185,14 +197,14 @@
         <tr id="itin-main-3"><td class="day" onclick="toggleDayDetail(3)">3일차 (1/4, 월)</td><td><a href="#site-memphis" class="itin-link" onclick="jumpSite(event,'site-memphis')">멤피스 야외 박물관</a> · 사카라(<a href="#site-unas" class="itin-link" onclick="jumpSite(event,'site-unas')">우나스</a> · <a href="#site-teti" class="itin-link" onclick="jumpSite(event,'site-teti')">테티</a> · <a href="#site-kagemni" class="itin-link" onclick="jumpSite(event,'site-kagemni')">카겜니</a>) · 다슈르(<a href="#site-bent" class="itin-link" onclick="jumpSite(event,'site-bent')">굴절</a> · <a href="#site-red" class="itin-link" onclick="jumpSite(event,'site-red')">붉은 피라미드</a>) · 아스완행 항공</td><td class="era-cell" style="--c:#A87A28">고왕국</td></tr>
         <tr class="itin-detail-row" id="itin-detail-3"><td colspan="3" class="itin-detail-cell">
           <div class="sub-itin-wrap"><table class="sub-itin">
-            <thead><tr><th style="width:85px">지역</th><th style="width:95px">시간</th><th>여행 일정</th></tr></thead>
+            <thead><tr><th class="col-reg">지역</th><th class="col-time">시간</th><th>여행 일정</th></tr></thead>
             <tbody>
               <tr><td class="col-reg" rowspan="2">카이로</td><td class="col-time">06:30-</td><td>호텔 조식 (06시 30분부터 가능)</td></tr>
               <tr><td class="col-time">09:00</td><td>호텔 출발</td></tr>
-              <tr><td class="col-reg">멤피스<br>사카라<br>다슈르</td><td class="col-time">09:30 - 13:00</td><td><b>▣ 멤피스 지역 탐방</b>: 멤피스 야외 박물관<br><b>▣ 사카라 지역 탐방</b>: 우나스 피라미드, 테티 피라미드, 카겜니 마스타바<br><b>▣ 다슈르 지역 탐방</b>: 굴절 피라미드, 붉은 피라미드</td></tr>
+              <tr><td class="col-reg">멤피스<br>사카라<br>다슈르</td><td class="col-time">09:30<br>- 13:00</td><td><b>▣ 멤피스 지역 탐방</b>: 멤피스 야외 박물관<br><b>▣ 사카라 지역 탐방</b>: 우나스 피라미드, 테티 피라미드, 카겜니 마스타바<br><b>▣ 다슈르 지역 탐방</b>: 굴절 피라미드, 붉은 피라미드</td></tr>
               <tr><td class="col-reg" rowspan="2">카이로</td><td class="col-time">13:30</td><td>점심식사 (현지식당)</td></tr>
               <tr><td class="col-time">15:00</td><td>공항 이동</td></tr>
-              <tr><td class="col-reg">카이로 → 아스완</td><td class="col-time">18:45 - 20:10</td><td>카이로(CAI) 1/4 18:45 → 아스완(ASW) 1/4 20:10 ㅣ 이집트항공 MS086 약 1시간 25분 소요</td></tr>
+              <tr><td class="col-reg">카이로 → 아스완</td><td class="col-time">18:45<br>- 20:10</td><td>카이로(CAI) 1/4 18:45 → 아스완(ASW) 1/4 20:10 ㅣ 이집트항공 MS086 약 1시간 25분 소요</td></tr>
               <tr><td class="col-reg">아스완</td><td class="col-time">22:00</td><td>호텔 도착 · 석식 (*늦은 저녁 식사)<br><span class="hotel-badge">THE ZEN WELLNESS RESORT ASWAN 5★ 혹은 동급</span></td></tr>
             </tbody>
           </table></div>
@@ -200,7 +212,7 @@
         <tr id="itin-main-4"><td class="day" onclick="toggleDayDetail(4)">4일차 (1/5, 화)</td><td>아스완 지역 탐방 — <a href="#site-qubbet" class="itin-link" onclick="jumpSite(event,'site-qubbet')">쿠베트 엘 하와(귀족무덤)</a> · <a href="#site-elephantine" class="itin-link" onclick="jumpSite(event,'site-elephantine')">엘레판티네 섬</a> · <a href="#site-sehel" class="itin-link" onclick="jumpSite(event,'site-sehel')">세헬 섬</a> · <a href="#site-obelisk" class="itin-link" onclick="jumpSite(event,'site-obelisk')">미완성 오벨리스크</a> · <a href="#site-nubian-mus" class="itin-link" onclick="jumpSite(event,'site-nubian-mus')">누비안 박물관</a></td><td class="era-cell" style="--c:#5F6E42">고왕국~중왕국</td></tr>
         <tr class="itin-detail-row" id="itin-detail-4"><td colspan="3" class="itin-detail-cell">
           <div class="sub-itin-wrap"><table class="sub-itin">
-            <thead><tr><th style="width:85px">지역</th><th style="width:95px">시간</th><th>여행 일정</th></tr></thead>
+            <thead><tr><th class="col-reg">지역</th><th class="col-time">시간</th><th>여행 일정</th></tr></thead>
             <tbody>
               <tr><td class="col-reg" rowspan="6">아스완</td><td class="col-time">06:30</td><td>기상 및 조식</td></tr>
               <tr><td class="col-time">08:00</td><td>호텔 출발</td></tr>
@@ -214,7 +226,7 @@
         <tr id="itin-main-5"><td class="day" onclick="toggleDayDetail(5)">5일차 (1/6, 수)</td><td>아스완-아부심벨 새벽 04시 출발 · <a href="#site-abusimbel" class="itin-link" onclick="jumpSite(event,'site-abusimbel')">아부심벨(대·소신전)</a> · <a href="#site-philae" class="itin-link" onclick="jumpSite(event,'site-philae')">필라에 섬(이시스 신전)</a></td><td class="era-cell" style="--c:#1C4E6B">신왕국 · 프톨레마이오스</td></tr>
         <tr class="itin-detail-row" id="itin-detail-5"><td colspan="3" class="itin-detail-cell">
           <div class="sub-itin-wrap"><table class="sub-itin">
-            <thead><tr><th style="width:85px">지역</th><th style="width:95px">시간</th><th>여행 일정</th></tr></thead>
+            <thead><tr><th class="col-reg">지역</th><th class="col-time">시간</th><th>여행 일정</th></tr></thead>
             <tbody>
               <tr><td class="col-reg">아스완</td><td class="col-time">03:00</td><td>새벽 기상 및 조식</td></tr>
               <tr><td class="col-reg">아스완 → 아부심벨</td><td class="col-time">04:00</td><td>호텔 출발 (아스완 → 아부심벨 이동)</td></tr>
@@ -229,12 +241,12 @@
         <tr id="itin-main-6"><td class="day" onclick="toggleDayDetail(6)">6일차 (1/7, 목)</td><td><a href="#site-edfu" class="itin-link" onclick="jumpSite(event,'site-edfu')">에드푸 호루스 신전</a> · 룩소르 이동 · <a href="#site-karnak" class="itin-link" onclick="jumpSite(event,'site-karnak')">카르나크 신전</a> · <a href="#site-luxor-mus" class="itin-link" onclick="jumpSite(event,'site-luxor-mus')">룩소르 박물관</a></td><td class="era-cell" style="--c:#1C4E6B">신왕국 · 프톨레마이오스</td></tr>
         <tr class="itin-detail-row" id="itin-detail-6"><td colspan="3" class="itin-detail-cell">
           <div class="sub-itin-wrap"><table class="sub-itin">
-            <thead><tr><th style="width:85px">지역</th><th style="width:95px">시간</th><th>여행 일정</th></tr></thead>
+            <thead><tr><th class="col-reg">지역</th><th class="col-time">시간</th><th>여행 일정</th></tr></thead>
             <tbody>
               <tr><td class="col-reg" rowspan="2">아스완</td><td class="col-time">06:30-</td><td>호텔 조식 (06시 30분부터 가능)</td></tr>
               <tr><td class="col-time">07:00</td><td>호텔 출발</td></tr>
               <tr><td class="col-reg">아스완 → 에드푸</td><td class="col-time">08:00</td><td>아스완 → 에드푸 이동</td></tr>
-              <tr><td class="col-reg">에드푸<br>룩소르</td><td class="col-time">09:00 - 18:00</td><td><b>▣ 에드푸</b>: 호루스 신전<br>에드푸 → 룩소르 이동<br>점심식사 (현지식당)<br><b>▣ 카르나크 신전</b><br><b>▣ 룩소르 박물관</b></td></tr>
+              <tr><td class="col-reg">에드푸<br>룩소르</td><td class="col-time">09:00<br>- 18:00</td><td><b>▣ 에드푸</b>: 호루스 신전<br>에드푸 → 룩소르 이동<br>점심식사 (현지식당)<br><b>▣ 카르나크 신전</b><br><b>▣ 룩소르 박물관</b></td></tr>
               <tr><td class="col-reg">룩소르</td><td class="col-time">19:00</td><td>호텔 도착 · 석식<br><span class="hotel-badge">STEIGENBERGER LUXOR 5★ 혹은 동급</span></td></tr>
             </tbody>
           </table></div>
@@ -242,7 +254,7 @@
         <tr id="itin-main-7"><td class="day" onclick="toggleDayDetail(7)">7일차 (1/8, 금)</td><td><a href="#site-memnon" class="itin-link" onclick="jumpSite(event,'site-memnon')">멤논의 거상</a> · 룩소르 서안(<a href="#site-habu" class="itin-link" onclick="jumpSite(event,'site-habu')">메디넷 하부</a> · <a href="#site-deir-medina" class="itin-link" onclick="jumpSite(event,'site-deir-medina')">데이르 엘 메디나</a> · <a href="#site-hatshepsut" class="itin-link" onclick="jumpSite(event,'site-hatshepsut')">데이르 엘 바하리</a> · <a href="#site-nobles-tombs" class="itin-link" onclick="jumpSite(event,'site-nobles-tombs')">귀족무덤군</a>) · <a href="#site-luxor-temple" class="itin-link" onclick="jumpSite(event,'site-luxor-temple')">룩소르 신전</a></td><td class="era-cell" style="--c:#1C4E6B">신왕국</td></tr>
         <tr class="itin-detail-row" id="itin-detail-7"><td colspan="3" class="itin-detail-cell">
           <div class="sub-itin-wrap"><table class="sub-itin">
-            <thead><tr><th style="width:85px">지역</th><th style="width:95px">시간</th><th>여행 일정</th></tr></thead>
+            <thead><tr><th class="col-reg">지역</th><th class="col-time">시간</th><th>여행 일정</th></tr></thead>
             <tbody>
               <tr><td class="col-reg" rowspan="2">룩소르</td><td class="col-time">06:30-</td><td>호텔 조식 (06시 30분부터 가능)</td></tr>
               <tr><td class="col-time">07:00</td><td>호텔 출발</td></tr>
@@ -256,11 +268,11 @@
         <tr id="itin-main-8"><td class="day" onclick="toggleDayDetail(8)">8일차 (1/9, 토)</td><td><a href="#site-dendera" class="itin-link" onclick="jumpSite(event,'site-dendera')">덴데라 하토르 신전</a> · 룩소르 서안 왕들의 계곡(<a href="#site-seti-kv17" class="itin-link" onclick="jumpSite(event,'site-seti-kv17')">세티 1세 무덤</a> · <a href="#site-tut-kv62" class="itin-link" onclick="jumpSite(event,'site-tut-kv62')">투탕카멘 무덤</a> 포함)</td><td class="era-cell" style="--c:#1C4E6B">신왕국 · 프톨레마이오스</td></tr>
         <tr class="itin-detail-row" id="itin-detail-8"><td colspan="3" class="itin-detail-cell">
           <div class="sub-itin-wrap"><table class="sub-itin">
-            <thead><tr><th style="width:85px">지역</th><th style="width:95px">시간</th><th>여행 일정</th></tr></thead>
+            <thead><tr><th class="col-reg">지역</th><th class="col-time">시간</th><th>여행 일정</th></tr></thead>
             <tbody>
               <tr><td class="col-reg" rowspan="2">룩소르</td><td class="col-time">06:30-</td><td>호텔 조식 (06시 30분부터 가능)</td></tr>
               <tr><td class="col-time">07:30</td><td>호텔 출발</td></tr>
-              <tr><td class="col-reg">덴데라<br>룩소르 서안</td><td class="col-time">09:00 - 16:00</td><td>룩소르 → 덴데라 버스 이동<br><b>▣ 덴데라 하토르 신전</b><br>덴데라 → 룩소르 서안 버스 이동<br><b>▣ 왕들의 계곡</b> (세티 1세 무덤, 투탕카멘 무덤 포함)</td></tr>
+              <tr><td class="col-reg">덴데라<br>룩소르 서안</td><td class="col-time">09:00<br>- 16:00</td><td>룩소르 → 덴데라 버스 이동<br><b>▣ 덴데라 하토르 신전</b><br>덴데라 → 룩소르 서안 버스 이동<br><b>▣ 왕들의 계곡</b> (세티 1세 무덤, 투탕카멘 무덤 포함)</td></tr>
               <tr><td class="col-reg">룩소르</td><td class="col-time">18:00</td><td>석식: 현지 레스토랑<br><span class="hotel-badge">STEIGENBERGER LUXOR 5★</span></td></tr>
             </tbody>
           </table></div>
@@ -268,11 +280,11 @@
         <tr id="itin-main-9"><td class="day" onclick="toggleDayDetail(9)">9일차 (1/10, 일)</td><td>룩소르→카이로 항공 · <a href="#site-gem-gold" class="itin-link" onclick="jumpSite(event,'site-gem-gold')">대이집트박물관(GEM) 관람</a></td><td class="era-cell" style="--c:#666">박물관</td></tr>
         <tr class="itin-detail-row" id="itin-detail-9"><td colspan="3" class="itin-detail-cell">
           <div class="sub-itin-wrap"><table class="sub-itin">
-            <thead><tr><th style="width:85px">지역</th><th style="width:95px">시간</th><th>여행 일정</th></tr></thead>
+            <thead><tr><th class="col-reg">지역</th><th class="col-time">시간</th><th>여행 일정</th></tr></thead>
             <tbody>
               <tr><td class="col-reg">룩소르</td><td class="col-time">06:30-</td><td>호텔 조식 (06시 30분부터 가능)</td></tr>
-              <tr><td class="col-reg">룩소르 → 카이로</td><td class="col-time">09:30 - 10:40</td><td>룩소르(LXR) 1/10 09:30 → 카이로(CAI) 1/10 10:40 ㅣ 나일에어 NP072 약 1시간 10분 소요</td></tr>
-              <tr><td class="col-reg" rowspan="2">카이로</td><td class="col-time">12:00 - 18:00</td><td><b>▣ 대이집트 박물관(GEM)</b> (*중식: GEM 내부 식당)</td></tr>
+              <tr><td class="col-reg">룩소르 → 카이로</td><td class="col-time">09:30<br>- 10:40</td><td>룩소르(LXR) 1/10 09:30 → 카이로(CAI) 1/10 10:40 ㅣ 나일에어 NP072 약 1시간 10분 소요</td></tr>
+              <tr><td class="col-reg" rowspan="2">카이로</td><td class="col-time">12:00<br>- 18:00</td><td><b>▣ 대이집트 박물관(GEM)</b> (*중식: GEM 내부 식당)</td></tr>
               <tr><td class="col-time">19:00</td><td>호텔 도착 · 석식<br><span class="hotel-badge">FAIRMONT NILE CITY 5★</span></td></tr>
             </tbody>
           </table></div>
@@ -280,7 +292,7 @@
         <tr id="itin-main-10"><td class="day" onclick="toggleDayDetail(10)">10일차 (1/11, 월)</td><td>카이로 탐방 — <a href="#site-giza" class="itin-link" onclick="jumpSite(event,'site-giza')">기자 대피라미드</a> · <a href="#site-sphinx" class="itin-link" onclick="jumpSite(event,'site-sphinx')">스핑크스</a> · 피라미드 파노라마 조망 등 · <a href="#site-nmec" class="itin-link" onclick="jumpSite(event,'site-nmec')">이집트 문명 박물관</a> · <a href="#site-khalili" class="itin-link" onclick="jumpSite(event,'site-khalili')">칸 엘 칼릴리 시장(자유시간)</a></td><td class="era-cell" style="--c:#A87A28">고왕국 · 이슬람</td></tr>
         <tr class="itin-detail-row" id="itin-detail-10"><td colspan="3" class="itin-detail-cell">
           <div class="sub-itin-wrap"><table class="sub-itin">
-            <thead><tr><th style="width:85px">지역</th><th style="width:95px">시간</th><th>여행 일정</th></tr></thead>
+            <thead><tr><th class="col-reg">지역</th><th class="col-time">시간</th><th>여행 일정</th></tr></thead>
             <tbody>
               <tr><td class="col-reg" rowspan="5">카이로</td><td class="col-time">06:30-</td><td>호텔 조식 (06시 30분부터 가능)</td></tr>
               <tr><td class="col-time">07:30</td><td>호텔 출발</td></tr>
@@ -294,7 +306,7 @@
         <tr id="itin-main-11"><td class="day" onclick="toggleDayDetail(11)">11일차 (1/12, 화)</td><td><a href="#site-tahrir" class="itin-link" onclick="jumpSite(event,'site-tahrir')">이집트 박물관</a> · <a href="#site-citadel" class="itin-link" onclick="jumpSite(event,'site-citadel')">카이로 성채</a> · 카이로 출발 <span class="fl">QR1302 19:35</span></td><td class="era-cell" style="--c:#666">박물관 · 이슬람</td></tr>
         <tr class="itin-detail-row" id="itin-detail-11"><td colspan="3" class="itin-detail-cell">
           <div class="sub-itin-wrap"><table class="sub-itin">
-            <thead><tr><th style="width:85px">지역</th><th style="width:95px">시간</th><th>여행 일정</th></tr></thead>
+            <thead><tr><th class="col-reg">지역</th><th class="col-time">시간</th><th>여행 일정</th></tr></thead>
             <tbody>
               <tr><td class="col-reg" rowspan="5">카이로</td><td class="col-time">06:30-</td><td>호텔 조식 (06시 30분부터 가능)</td></tr>
               <tr><td class="col-time">09:00</td><td>호텔 출발</td></tr>
@@ -302,17 +314,17 @@
               <tr><td class="col-time">12:30</td><td>중식 (현지 한식당)</td></tr>
               <tr><td class="col-time">14:00</td><td><b>▣ 살라딘 성채</b></td></tr>
               <tr><td class="col-reg">카이로 공항</td><td class="col-time">16:30</td><td>공항 도착 후 출국 수속</td></tr>
-              <tr><td class="col-reg">카이로 → 도하</td><td class="col-time">19:35 - 23:40</td><td>카이로(CAI) 1/12 19:35 → 도하(DOH) 1/13 23:40 ㅣ 카타르항공 QR1302 약 3시간 5분 소요</td></tr>
+              <tr><td class="col-reg">카이로 → 도하</td><td class="col-time">19:35<br>- 23:40</td><td>카이로(CAI) 1/12 19:35 → 도하(DOH) 1/13 23:40 ㅣ 카타르항공 QR1302 약 3시간 5분 소요</td></tr>
             </tbody>
           </table></div>
         </td></tr>
         <tr id="itin-main-12"><td class="day" onclick="toggleDayDetail(12)">12일차 (1/13, 수)</td><td>도하 환승 <span class="fl">QR858 02:40</span> · 인천공항 17:15 도착</td><td class="era-cell" style="--c:#999">이동</td></tr>
         <tr class="itin-detail-row" id="itin-detail-12"><td colspan="3" class="itin-detail-cell">
           <div class="sub-itin-wrap"><table class="sub-itin">
-            <thead><tr><th style="width:85px">지역</th><th style="width:95px">시간</th><th>여행 일정</th></tr></thead>
+            <thead><tr><th class="col-reg">지역</th><th class="col-time">시간</th><th>여행 일정</th></tr></thead>
             <tbody>
               <tr><td class="col-reg">도하</td><td class="col-time">24:00</td><td>도하 하마드 국제공항 도착 후, 환승 수속</td></tr>
-              <tr><td class="col-reg">도하 → 인천</td><td class="col-time">02:40 - 17:15</td><td>도하(DOH) 1/13 02:40 → 인천(ICN) 1/13 17:15 ㅣ 카타르항공 QR858 약 8시간 35분 소요</td></tr>
+              <tr><td class="col-reg">도하 → 인천</td><td class="col-time">02:40<br>- 17:15</td><td>도하(DOH) 1/13 02:40 → 인천(ICN) 1/13 17:15 ㅣ 카타르항공 QR858 약 8시간 35분 소요</td></tr>
               <tr><td class="col-reg">인천</td><td class="col-time">17:15</td><td>인천공항 도착</td></tr>
             </tbody>
           </table></div>
